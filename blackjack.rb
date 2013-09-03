@@ -10,12 +10,35 @@ def shuffle arr
   return_arr
 end
 
-def deal(deck, num)
-  return_arr = []
+def deal(deck, num, player)
   num.times do
-    return_arr << deck.pop
+    (eval player) << (eval deck).pop
   end
-  return_arr
+end
+
+def print player
+  total = 0
+  player.each do |x|
+      puts "#{x[0]}, value: #{x[1]}"
+      total += x[1]
+  end
+  puts "total = #{total}"
+end
+
+def total player
+  total = 0
+  player.each do |x|
+      total += x[1]
+  end
+  total
+end
+
+def dealer_action
+  if (total dealer) < 17
+    '1'
+  else
+    '2'
+  end
 end
 
 # deck1 = {ace_of_hearts: 1, two_of_hearts: 2, three_of_hearts: 3, four_of_hearts: 4, five_of_hearts: 5, 
@@ -44,9 +67,97 @@ deck = [['ace of hearts', 1], ['two of hearts', 2], ['three of hearts', 3], ['fo
         ['six of spades', 6], ['seven of spades', 7], ['eight of spades', 8], ['nine of spades', 9], ['ten of spades', 10],
         ['jack of spades', 10], ['queen of spades', 10], ['king of spades', 10]]
 
-deck = shuffle deck
-puts deck.to_s
-player = []
-dealer = []
-player << deal(deck, 3)
-puts player.to_s
+puts 'hello, what is your name'
+name = gets.chomp
+puts "good day #{name}, let's play some blackjack!"
+game = 'intialize'
+while true
+  if game == 'intialize'
+    response = '0'
+    while response != '1' && response != '2'
+      puts "what would you like to do #{name}? 1)play, 2)exit"
+      response = gets.chomp
+      puts 'invalid entry' if response != '1' && response != '2' 
+      exit if response == '2'
+    end
+    current_deck = shuffle deck 
+    player = []
+    dealer = []
+    cards_to_deal = 2
+    active_player = 'player'
+    other_player = 'dealer'
+    cards_to_deal.times {
+    deal('current_deck', 1, 'player')
+    deal('current_deck', 1, 'dealer')
+    cards_to_deal = 1
+    }
+  else
+    deal('current_deck', 1, '(eval active_player)')
+  end
+  puts "your current hand:"
+  print player
+  if game == 'intialize'
+    puts "dealer's showing:"
+    print [dealer.first]
+  else
+    puts "dealer's hand:"
+    print dealer
+  end
+  if (total active_player) > 21
+    puts "#{active_player} busts"
+    game = 'intialize'
+    next
+  end
+  if (total active_player) == 21
+    print player
+    print dealer
+    if (total other_player) != 21
+      puts "#{active_player} wins"
+      game = 'intialize'
+      next
+    else
+      puts "push"
+      game = 'intialize'
+      next
+    end
+  end
+  if active_player == 'player'
+    response = '0'
+    while response != '1' && response != '2'
+      puts "what would you like to do #{name}? 1)hit, 2)stay"
+      response = gets.chomp
+      puts 'invalid entry' if response != '1' && response != '2'
+    end
+    if response == 1 # ("hit")
+      game = 'continue'
+      next
+    else # response == '2' ("stay")
+      game = 'continue'
+      active_player = 'dealer'
+      other_player = 'player'
+    end
+  elsif active_player == 'dealer'
+    print player
+    print dealer
+    if (total dealer) > (total player)
+      puts "you lose"
+      game = 'intialize'
+      next
+    else
+      response = dealer_action
+      puts "dealer response: #{response}"
+      if response == '1'
+        game = 'continue'
+        next
+      elsif (total player) == (total dealer)# dealer wants to "stay"
+        puts "push, game over"
+        game = 'intialize'
+        next
+      else
+        puts "you win!"
+        game = 'intialize'
+        next
+      end
+    end
+  end
+end  
