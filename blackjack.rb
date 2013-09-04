@@ -1,18 +1,17 @@
 def shuffle arr
-  return_arr = arr
+  temp_arr = Array.new(arr)
   i = 0
-  while i < return_arr.length
-    rand_element = rand(arr.length)
-    return_arr[i] = arr[rand_element]
-    arr.delete(rand_element)
+  while i < arr.length
+    rand_element = rand(0..temp_arr.length-1)
+    arr[i] = temp_arr[rand_element]
+    temp_arr.delete_at(rand_element)
     i += 1
   end
-  return_arr
 end
 
 def deal(deck, num, player)
   num.times do
-    (eval player) << (eval deck).pop
+    player << deck.pop
   end
 end
 
@@ -33,26 +32,13 @@ def total player
   total
 end
 
-def dealer_action
+def dealer_action dealer
   if (total dealer) < 17
     '1'
   else
     '2'
   end
 end
-
-# deck1 = {ace_of_hearts: 1, two_of_hearts: 2, three_of_hearts: 3, four_of_hearts: 4, five_of_hearts: 5, 
-#         six_of_hearts: 6, siven_of_hearts: 7, eight_of_hearts: 8, nine_of_hearts: 9, ten_of_hearts: 10,
-#         jack_of_hearts: 10, queen_of_hearts: 10, king_of_hearts: 10,
-#         ace_of_diamonds: 1, two_of_diamonds: 2, three_of_diamonds: 3, four_of_diamonds: 4, five_of_diamonds:5,
-#         six_of_diamonds: 6, seven_of_diamonds: 7, eight_of_diamonds: 8, nine_of_diamonds: 9, ten_of_diamonds: 10,
-#         jack_of_diamonds: 10, queen_of_diamonds: 10, king_of_diamonds: 10, 
-#         ace_of_clubs: 1, two_of_clubs: 2, three_of_clubs: 3, four_of_clubs: 4, five_of_clubs: 5, 
-#         six_of_clubs: 6, seven_of_clubs: 6, eight_of_clubs: 8, nine_of_clubs: 9, ten_of_clubs: 10,
-#         jack_of_clubs: 10, queen_of_clubs: 10, king_of_clubs: 10,
-#         ace_of_spades: 1, two_of_spades: 2, three_of_spades: 3, four_of_spades: 4, five_of_spades: 5, 
-#         six_of_spades: 6, seven_of_spades: 6, eight_of_spades: 8, nine_of_spades: 9, ten_of_spades: 10,
-#         jack_of_spades: 10, queen_of_spades: 10, king_of_spades: 10}
 
 deck = [['ace of hearts', 1], ['two of hearts', 2], ['three of hearts', 3], ['four of hearts', 4], ['five of hearts', 5],
         ['six of hearts', 6], ['seven of hearts', 7], ['eight of hearts', 8], ['nine of hearts', 9], ['ten of hearts', 10],
@@ -80,19 +66,20 @@ while true
       puts 'invalid entry' if response != '1' && response != '2' 
       exit if response == '2'
     end
-    current_deck = shuffle deck 
+    current_deck = Array.new(deck)
+    shuffle current_deck
     player = []
     dealer = []
     cards_to_deal = 2
     active_player = 'player'
     other_player = 'dealer'
     cards_to_deal.times {
-    deal('current_deck', 1, 'player')
-    deal('current_deck', 1, 'dealer')
+    deal(current_deck, 1, player)
+    deal(current_deck, 1, dealer)
     cards_to_deal = 1
     }
   else
-    deal('current_deck', 1, '(eval active_player)')
+    deal(current_deck, 1, ((active_player == 'player') ? player : dealer))
   end
   puts "your current hand:"
   print player
@@ -103,15 +90,15 @@ while true
     puts "dealer's hand:"
     print dealer
   end
-  if (total active_player) > 21
+  if (total ((active_player == 'player') ? player : dealer)) > 21
     puts "#{active_player} busts"
     game = 'intialize'
     next
   end
-  if (total active_player) == 21
+  if (total ((active_player == 'player') ? player : dealer)) == 21
     print player
     print dealer
-    if (total other_player) != 21
+    if (total ((active_player == 'player') ? dealer : player)) != 21
       puts "#{active_player} wins"
       game = 'intialize'
       next
@@ -128,7 +115,7 @@ while true
       response = gets.chomp
       puts 'invalid entry' if response != '1' && response != '2'
     end
-    if response == 1 # ("hit")
+    if response == '1' # ("hit")
       game = 'continue'
       next
     else # response == '2' ("stay")
@@ -136,7 +123,8 @@ while true
       active_player = 'dealer'
       other_player = 'player'
     end
-  elsif active_player == 'dealer'
+  end
+  if active_player == 'dealer'
     print player
     print dealer
     if (total dealer) > (total player)
@@ -144,7 +132,7 @@ while true
       game = 'intialize'
       next
     else
-      response = dealer_action
+      response = dealer_action dealer
       puts "dealer response: #{response}"
       if response == '1'
         game = 'continue'
