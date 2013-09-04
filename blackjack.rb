@@ -9,10 +9,8 @@ def shuffle arr
   end
 end
 
-def deal(deck, num, player)
-  num.times do
-    player << deck.pop
-  end
+def deal(deck, player)
+  player << deck.pop
 end
 
 def print player
@@ -70,43 +68,36 @@ while true
     shuffle current_deck
     player = []
     dealer = []
-    cards_to_deal = 2
     active_player = 'player'
     other_player = 'dealer'
-    cards_to_deal.times {
-    deal(current_deck, 1, player)
-    deal(current_deck, 1, dealer)
-    cards_to_deal = 1
+    2.times {
+    deal(current_deck, player)
+    deal(current_deck, dealer)
     }
   else
-    deal(current_deck, 1, ((active_player == 'player') ? player : dealer))
+    deal(current_deck, (eval active_player))
   end
   puts "your current hand:"
   print player
-  if game == 'intialize'
+  if active_player == 'player'
     puts "dealer's showing:"
     print [dealer.first]
   else
-    puts "dealer's hand:"
+    puts "dealers hand:"
     print dealer
   end
   if (total ((active_player == 'player') ? player : dealer)) > 21
-    puts "#{active_player} busts"
+    puts "#{active_player} busts" + ((active_player == 'player') ? ' dealer wins' : " you win #{name}!!")
     game = 'intialize'
     next
-  end
-  if (total ((active_player == 'player') ? player : dealer)) == 21
-    print player
-    print dealer
-    if (total ((active_player == 'player') ? dealer : player)) != 21
-      puts "#{active_player} wins"
-      game = 'intialize'
-      next
-    else
-      puts "push"
-      game = 'intialize'
-      next
-    end
+  elsif (total eval active_player) == 21 && (total eval other_player) != 21
+    puts "#{active_player} wins"  + ((active_player == 'player') ? " you win #{name}" : '')
+    game = 'intialize'
+    next
+  elsif  (total eval active_player) == 21 && (total eval other_player) == 21
+    puts "push"
+    game = 'intialize'
+    next
   end
   if active_player == 'player'
     response = '0'
@@ -122,18 +113,18 @@ while true
       game = 'continue'
       active_player = 'dealer'
       other_player = 'player'
+      puts "dealer's hand:"
+      print dealer
     end
   end
   if active_player == 'dealer'
-    print player
-    print dealer
     if (total dealer) > (total player)
       puts "you lose"
       game = 'intialize'
       next
     else
       response = dealer_action dealer
-      puts "dealer response: #{response}"
+      puts 'dealer' + ((response == '1') ? ' hits' : ' stays')
       if response == '1'
         game = 'continue'
         next
