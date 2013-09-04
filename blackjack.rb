@@ -1,14 +1,3 @@
-def shuffle arr
-  temp_arr = Array.new(arr)
-  i = 0
-  while i < arr.length
-    rand_element = rand(0..temp_arr.length-1)
-    arr[i] = temp_arr[rand_element]
-    temp_arr.delete_at(rand_element)
-    i += 1
-  end
-end
-
 def deal(deck, player)
   player << deck.pop
 end
@@ -70,7 +59,7 @@ while true
       exit if response == '2'
     end
     current_deck = Array.new(deck)
-    shuffle current_deck
+    current_deck.shuffle!
     player = []
     dealer = []
     active_player = 'player'
