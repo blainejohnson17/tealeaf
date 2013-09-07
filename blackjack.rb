@@ -37,7 +37,7 @@ def dealer_action dealer
 end
 
 def shuffle deck
-    return_deck = []
+  return_deck = []
   2.times {
     return_deck << deck
   }
@@ -55,12 +55,12 @@ def get_response message
   response = '0'
   prompt = "what would you like to do? "
   prompt += message == 'play?' ?  '1)play, 2)exit' : '1)hit, 2)stay'
-    while response != '1' && response != '2'
-      puts prompt
-      response = gets.chomp
-      puts 'invalid entry' if response != '1' && response != '2' 
-    end
-    response
+  while response != '1' && response != '2'
+    puts prompt
+    response = gets.chomp
+    puts 'invalid entry' if response != '1' && response != '2' 
+  end
+  response
 end
 
 
