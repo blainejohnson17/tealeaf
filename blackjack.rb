@@ -2,7 +2,7 @@ def deal(deck, player_or_dealer)
   player_or_dealer << deck.pop
 end
 
-def print(player_or_dealer)
+def print_hand(player_or_dealer)
   player_or_dealer.each do |card|
     puts "  #{card}"
   end
@@ -90,9 +90,9 @@ while true
     puts "Blackjack!!"
     puts total(dealer) == 21 ? "Push, dealer also had blackjack" : "You won #{name}"
     puts "your current hand:"
-    print player
+    print_hand player
     puts "dealer's hand:"
-    print dealer
+    print_hand dealer
     next
   end
 
@@ -100,13 +100,13 @@ while true
 
     #show hand
     puts "your current hand:"
-    print(player)
+    print_hand(player)
     if active_player == 'player'
       puts "dealer's showing:"
-      print [dealer.first]
+      print_hand [dealer.first]
     else
       puts "dealers hand:"
-      print(dealer)
+      print_hand(dealer)
     end
 
     # check to see if active_player has busted
@@ -125,7 +125,7 @@ while true
         active_player = 'dealer'
         other_player = 'player'
         puts "dealer's hand:"
-        print dealer
+        print_hand dealer
       end
     end
 
