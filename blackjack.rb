@@ -36,6 +36,21 @@ def dealer_action dealer
   total(dealer) < 17 ? '1' : '2'
 end
 
+def shuffle deck
+    return_deck = []
+  2.times {
+    return_deck << deck
+  }
+  return_deck.flatten!.shuffle!
+end
+
+def create_deck
+  suit = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
+  card = ['hearts', 'diamonds', 'spades', 'clubs']
+  deck = suit.product(card).map {|x| x.join(' of ')}
+  shuffle deck
+end
+
 def get_response message
   response = '0'
   prompt = "what would you like to do? "
@@ -48,9 +63,7 @@ def get_response message
     response
 end
 
-suit = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
-card = ['hearts', 'diamonds', 'spades', 'clubs']
-deck1 = suit.product(card).map {|x| x.join(' of ')}
+
 
 
 puts 'hello, what is your name'
@@ -61,8 +74,7 @@ while true
   response = get_response 'play?'
   exit if response == '2'
 
-  current_deck = deck1.shuffle
-
+  current_deck = create_deck
   player = []
   dealer = []
 
@@ -86,7 +98,7 @@ while true
 
   while true
 
-    #deal(current_deck, (eval active_player))
+    #show hand
     puts "your current hand:"
     print(player)
     if active_player == 'player'
@@ -103,6 +115,7 @@ while true
       break
     end
 
+    # player turn
     if active_player == 'player'
       response = get_response 'hit or stay?'
       if response == '1' # ("hit")
@@ -116,12 +129,14 @@ while true
       end
     end
 
+    # dealers turn
     if active_player == 'dealer'
       response = dealer_action dealer
       puts '=> dealer' + ((response == '1') ? ' hits' : ' stays')
       if response == '1'
         deal(current_deck, dealer)
         next
+      # final check to see who won  
       elsif total(player) == total(dealer) 
         puts "push, game over"
       else
