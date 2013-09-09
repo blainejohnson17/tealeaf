@@ -1,6 +1,4 @@
 class Deck
-  attr_reader :deck
-  
   def initialize(num)
     @deck = create_deck(num)
   end
@@ -18,8 +16,7 @@ class Deck
 end
 
 class Participant
-  attr :hand
-  attr :name
+  attr_accessor :hand, :name
 
   def initialize(name)
     @name = name
