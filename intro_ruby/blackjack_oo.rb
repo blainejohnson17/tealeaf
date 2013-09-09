@@ -1,36 +1,12 @@
-#module total(player_or_dealer)
-#  arr = player_or_dealer.map {|x| x.split(' ').first}#
-
-#  total = 0
-#  arr.each do |value|
-#    if value == 'ace'
-#      total += 11
-#    elsif value.to_i == 0
-#      total += 10
-#    else
-#      total += value.to_i
-#    end
-#  end#
-
-#  arr.select{|x| x == 'ace'}.count.times do
-#  total -= 10 if total > 21
-#  end#
-
-#  total
-#end
-
 class Deck
   attr_reader :deck
+  
   def initialize(num)
     @deck = create_deck(num)
   end
 
-  def to_s
-    "#{@deck}"
-  end
-
   def deal player_or_dealer
-    player_or_dealer << @deck.pop
+    player_or_dealer.hand << @deck.pop
   end
 
   def create_deck(num)
@@ -41,5 +17,49 @@ class Deck
   end
 end
 
+class Participant
+  attr :hand
+  attr :name
+
+  def initialize(name)
+    @name = name
+    @hand = []
+  end
+
+  def to_s
+    response = "#{name}'s hand:\n"
+    @hand.each {|card| response += "  #{card}\n"}
+    response += "  Total: #{total(@hand)}"
+    response
+  end
+
+  def total(hand)
+    arr = hand.map {|x| x.split(' ').first}
+    total = 0
+    arr.each do |value|
+      if value == 'ace'
+        total += 11
+      elsif value.to_i == 0
+        total += 10
+      else
+        total += value.to_i
+      end
+    end
+    arr.select{|x| x == 'ace'}.count.times do
+    total -= 10 if total > 21
+    end
+    total
+  end
+end
+
 current_deck = Deck.new(1)
-puts current_deck
+player = Participant.new("Blaine")
+dealer = Participant.new("Dealer")
+
+2.times do
+  current_deck.deal(player)
+  current_deck.deal(dealer)
+end
+
+puts player
+puts dealer
