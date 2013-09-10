@@ -8,9 +8,9 @@ class Deck
   end
 
   def create_deck(num)
-    suit = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
-    card = ['hearts', 'diamonds', 'spades', 'clubs']
-    deck = suit.product(card).map {|x| x.join(' of ')} * num
+    face = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
+    suit = ['hearts', 'diamonds', 'spades', 'clubs']
+    deck = face.product(suit).map {|x| x.join(' of ')} * num
     deck.shuffle!
   end
 end
