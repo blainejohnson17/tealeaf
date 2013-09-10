@@ -31,21 +31,15 @@ class Participant
   end
 
   def total(hand)
+    jack, queen, king, ace = 10, 10, 10, 11
     arr = hand.map {|x| x.split(' ').first}
-    total = 0
-    arr.each do |value|
-      if value == 'ace'
-        total += 11
-      elsif value.to_i == 0
-        total += 10
-      else
-        total += value.to_i
-      end
+    total_value = arr.inject(0) do |total, element|
+      total + (element.to_i == 0 ? eval(element) : element.to_i)
     end
     arr.select{|x| x == 'ace'}.count.times do
-    total -= 10 if total > 21
+      total_value -= 10 if total_value > 21
     end
-    total
+    total_value
   end
 end
 
