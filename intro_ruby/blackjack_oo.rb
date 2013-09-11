@@ -1,6 +1,20 @@
+class Card
+  attr_accessor :face, :suit
+
+  def initialize(face, suit)
+    @face = face
+    @suit = suit
+  end
+
+  def to_s
+    "#{@face} of #{@suit}"
+  end
+
+end
+
 class Deck
   def initialize(num)
-    @deck = create_deck(num)
+    @deck = create_deck(num).shuffle!
   end
 
   def deal player_or_dealer
@@ -8,10 +22,11 @@ class Deck
   end
 
   def create_deck(num)
+    deck = []
     face = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
     suit = ['hearts', 'diamonds', 'spades', 'clubs']
-    deck = face.product(suit).map {|x| x.join(' of ')} * num
-    deck.shuffle!
+    face.each { |f| suit.each { |s| deck << Card.new(f, s) } }
+    deck
   end
 end
 
@@ -26,13 +41,13 @@ class Participant
   def to_s
     response = "#{name}'s hand:\n"
     @hand.each {|card| response += "  #{card}\n"}
-    response += "  Total: #{total(@hand)}"
+    response += "  Total: #{total}"
     response
   end
 
-  def total(hand)
+  def total
     jack, queen, king, ace = 10, 10, 10, 11
-    arr = hand.map {|x| x.split(' ').first}
+    arr = @hand.map { |card| card.face }
     total_value = arr.inject(0) do |total, element|
       total + (element.to_i == 0 ? eval(element) : element.to_i)
     end
@@ -47,7 +62,7 @@ current_deck = Deck.new(1)
 player = Participant.new("Blaine")
 dealer = Participant.new("Dealer")
 
-2.times do
+4.times do
   current_deck.deal(player)
   current_deck.deal(dealer)
 end
