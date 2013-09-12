@@ -7,7 +7,7 @@ class Card
   end
 
   def to_s
-    "#{@face} of #{@suit}"
+    "#{@face.capitalize} of #{@suit.capitalize}"
   end
 
 end
@@ -31,6 +31,7 @@ class Deck
 end
 
 class Participant
+  include Comparable
   attr_accessor :hand, :name
 
   def initialize(name)
@@ -39,7 +40,7 @@ class Participant
   end
 
   def to_s
-    response = "#{name}'s hand:\n"
+    response = "#{name.capitalize}'s hand:\n"
     @hand.each {|card| response += "  #{card}\n"}
     response += "  Total: #{total}"
     response
@@ -56,10 +57,14 @@ class Participant
     end
     total_value
   end
+
+  def <=>(other)
+    self.total <=> other.total   
+  end
 end
 
 current_deck = Deck.new(1)
-player = Participant.new("Blaine")
+player = Participant.new("blaine")
 dealer = Participant.new("Dealer")
 
 4.times do
@@ -69,3 +74,5 @@ end
 
 puts player
 puts dealer
+
+puts (player > dealer ? "player's total is greater" : "dealer's total is greater")
