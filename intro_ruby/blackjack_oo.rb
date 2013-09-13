@@ -13,42 +13,91 @@ class Card
 end
 
 class Deck
+  attr_accessor :deck
   def initialize(num)
     @deck = create_deck(num).shuffle!
   end
 
-  def deal player_or_dealer
-    player_or_dealer.hand << @deck.pop
+  def deal
+    @deck.pop
   end
 
   def create_deck(num)
-    deck = []
+    arr = []
     face = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
     suit = ['hearts', 'diamonds', 'spades', 'clubs']
-    face.each { |f| suit.each { |s| deck << Card.new(f, s) } }
-    deck
+    face.each { |f| suit.each { |s| arr << Card.new(f, s) } }
+    arr
   end
 end
 
-class Participant
-  include Comparable
-  attr_accessor :hand, :name
+module Hand
+  def add_card(card)
+    hand << card
+  end
+
+  def to_s
+    response = "=>#{name.capitalize}'s hand:\n"
+    hand.each{|card| response += "  #{card}\n"}
+    response
+  end
+
+  def clear_hand
+    hand.clear
+  end
+end
+
+class Player
+  include Hand
+  attr_reader :name
+  attr_accessor :hand
 
   def initialize(name)
     @name = name
     @hand = []
   end
+end
 
-  def to_s
-    response = "#{name.capitalize}'s hand:\n"
-    @hand.each {|card| response += "  #{card}\n"}
-    response += "  Total: #{total}"
-    response
+class Dealer
+  include Hand
+  attr_reader :name
+  attr_accessor :hand
+
+  def initialize
+    @name = "Dealer"
+    @hand = []
   end
 
-  def total
+  def show_flop
+    response = "=>#{name.capitalize}'s hand:\n"
+    hand.each.with_index{|card, index| response += index == 0 ? "  #{card}\n" : "  Second card hidden \n" }
+    response
+  end
+end
+
+class Blackjack
+  attr_accessor :deck, :player, :dealer, :participants
+
+  def initialize
+    @deck = new_deck
+    @player = Player.new("#{get_name}")
+    @dealer = Dealer.new
+    @participants = [@player, @dealer]
+  end
+
+  def new_deck
+    Deck.new(1)  
+  end
+  
+  def get_name
+    puts "Welcome, to Blackjack!"
+    print "Please enter your name: "
+    gets.chomp
+  end
+
+  def total(hand)
     jack, queen, king, ace = 10, 10, 10, 11
-    arr = @hand.map { |card| card.face }
+    arr = hand.map { |card| card.face }
     total_value = arr.inject(0) do |total, element|
       total + (element.to_i == 0 ? eval(element) : element.to_i)
     end
@@ -58,21 +107,105 @@ class Participant
     total_value
   end
 
-  def <=>(other)
-    self.total <=> other.total   
+  def show_hand(player_or_dealer)
+    puts player_or_dealer
+    puts "  Total: #{total(player_or_dealer.hand)}"
+  end
+
+  def show_flop
+    puts dealer.show_flop
+    puts "  Total: #{total([dealer.hand.first])}"
+  end
+  def deal
+    2.times do
+      participants.each { |player_or_dealer| player_or_dealer.add_card(deck.deal) }
+    end 
+  end
+
+  def play_again
+    player.clear_hand
+    dealer.clear_hand
+    deck = new_deck
+    response = get_response("1)play, 2)exit")
+    response == '1' ? start_game : exit
+  end
+
+  def blackjack?
+    total(player.hand) == 21 ? true : false
+  end
+
+  def blackjack
+    puts total(dealer.hand) == 21 ? "Push, dealer also had blackjack" : "You won #{name}"
+    play_again
+  end
+
+  def bust?(player_or_dealer)
+    if total(player_or_dealer.hand) > 21
+      show_hand(player_or_dealer)
+      puts "--#{player_or_dealer.name.capitalize} Busted--"
+      puts player_or_dealer.class == Dealer ? "--YOU WIN!!--" : "You Lose.."
+      play_again
+    end
+  end
+
+  def get_response message
+    response = '0'
+    prompt = "what would you like to do? "
+    prompt += message
+    while response != '1' && response != '2'
+      puts prompt
+      response = gets.chomp
+      puts 'invalid entry' if response != '1' && response != '2' 
+    end
+    response
+  end
+
+  def players_turn
+    response = get_response '1)hit or 2)stay?'
+    if response == '1' # ("hit")
+      player.add_card(deck.deal)
+      bust?(player)
+      show_hand(player)
+      players_turn
+    end
+  end
+
+  def dealer_hit?
+    total(dealer.hand) < 17
+  end
+
+  def dealers_turn
+    if dealer_hit?
+      dealer.add_card(deck.deal)
+      puts "--Dealer HITS--"
+      bust?(dealer)
+      show_hand(dealer)
+      dealers_turn
+    else
+      puts "--Dealer STAYS--"
+    end
+  end
+
+  def who_won
+    if total(player.hand) == total(dealer.hand)
+      puts "----PUSH----"
+    else
+      puts total(player.hand) > total(dealer.hand) ? "--YOU WIN!!--" : "You Lose, Dealer has better hand"
+    end
+    play_again
+  end
+
+  def start_game
+    deal
+    show_hand(player)
+    show_flop
+    blackjack if blackjack?
+    players_turn
+    show_hand(dealer)
+    dealers_turn
+    who_won
   end
 end
 
-current_deck = Deck.new(1)
-player = Participant.new("blaine")
-dealer = Participant.new("Dealer")
-
-4.times do
-  current_deck.deal(player)
-  current_deck.deal(dealer)
-end
-
-puts player
-puts dealer
-
-puts (player > dealer ? "player's total is greater" : "dealer's total is greater")
+game = Blackjack.new
+game.start_game
