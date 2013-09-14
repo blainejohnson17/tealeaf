@@ -38,8 +38,8 @@ module Hand
   end
 
   def to_s
-    response = "=>#{name.capitalize}'s hand:\n"
-    hand.each{|card| response += "  #{card}\n"}
+    response = "\n--- #{name.capitalize}'s Hand: ---\n"
+    hand.each{|card| response += "  => #{card}\n"}
     response
   end
 
@@ -74,8 +74,8 @@ class Dealer
   end
 
   def show_flop
-    response = "=>#{name.capitalize}'s hand:\n"
-    hand.each.with_index{|card, index| response += index == 0 ? "  #{card}\n" : "  Second card hidden \n" }
+    response = "\n--- #{name.capitalize}'s Hand ---\n"
+    hand.each.with_index{|card, index| response += index == 0 ? "  => #{card}\n" : "  => Second card hidden \n" }
     response
   end
 end
@@ -114,12 +114,12 @@ class Blackjack
 
   def show_hand(player_or_dealer)
     puts player_or_dealer
-    puts "  Total: #{total(player_or_dealer)}"
+    puts " >>>> Total: #{total(player_or_dealer)} <<<<"
   end
 
   def show_flop
     puts dealer.show_flop
-    puts "  Total: #{total([dealer.hand.first])}"
+    puts " >>>> Total: #{total([dealer.first])} <<<<"
   end
   def deal
     2.times do
@@ -131,7 +131,7 @@ class Blackjack
     player.clear_hand
     dealer.clear_hand
     deck = new_deck
-    response = get_response("1)play, 2)exit")
+    response = get_response("1)play, 2)exit :")
     response == '1' ? start_game : exit
   end
 
@@ -140,25 +140,27 @@ class Blackjack
   end
 
   def blackjack
-    puts total(dealer) == 21 ? "Push, dealer also had blackjack" : "You won #{name}"
+    puts "\n-->> Blackjack!! <<--"
+    show_hand(dealer)
+    puts total(dealer) == 21 ? "\n-->> Push, dealer also has Blackjack <<--" : "\n-->> You won #{player.name}!! <<--"
     play_again
   end
 
   def bust?(player_or_dealer)
     if total(player_or_dealer) > 21
       show_hand(player_or_dealer)
-      puts "--#{player_or_dealer.name.capitalize} Busted--"
-      puts player_or_dealer.class == Dealer ? "--YOU WIN!!--" : "You Lose.."
+      puts "\n-->> #{player_or_dealer.name.capitalize} Busted <<--"
+      puts player_or_dealer.class == Dealer ? "\n-->> YOU WIN!! <<--" : "\n-->> You Lose.. <<--"
       play_again
     end
   end
 
   def get_response message
     response = '0'
-    prompt = "what would you like to do? "
+    prompt = "\nWhat would you like to do? "
     prompt += message
     while response != '1' && response != '2'
-      puts prompt
+      print prompt
       response = gets.chomp
       puts 'invalid entry' if response != '1' && response != '2' 
     end
@@ -166,8 +168,8 @@ class Blackjack
   end
 
   def players_turn
-    response = get_response '1)hit or 2)stay?'
-    if response == '1' # ("hit")
+    response = get_response '1)hit or 2)stay :'
+    if response == '1'
       player.add_card(deck.deal)
       bust?(player)
       show_hand(player)
@@ -182,20 +184,20 @@ class Blackjack
   def dealers_turn
     if dealer_hit?
       dealer.add_card(deck.deal)
-      puts "--Dealer HITS--"
+      puts "\n--> Dealer HITS <--"
       bust?(dealer)
       show_hand(dealer)
       dealers_turn
     else
-      puts "--Dealer STAYS--"
+      puts "\n--> Dealer STAYS <--"
     end
   end
 
   def who_won
     if total(player) == total(dealer)
-      puts "----PUSH----"
+      puts "\n-->> PUSH <<--"
     else
-      puts total(player) > total(dealer) ? "--YOU WIN!!--" : "You Lose, Dealer has better hand"
+      puts total(player) > total(dealer) ? "\n-->> YOU WIN!! <<--" : "\n-->> You Lose, Dealer has better hand <<--"
     end
     play_again
   end
