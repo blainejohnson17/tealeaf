@@ -32,6 +32,7 @@ class Deck
 end
 
 module Hand
+  include Enumerable
   def add_card(card)
     hand << card
   end
@@ -44,6 +45,10 @@ module Hand
 
   def clear_hand
     hand.clear
+  end
+
+  def each
+    hand.each { |e| yield e }
   end
 end
 
@@ -109,7 +114,7 @@ class Blackjack
 
   def show_hand(player_or_dealer)
     puts player_or_dealer
-    puts "  Total: #{total(player_or_dealer.hand)}"
+    puts "  Total: #{total(player_or_dealer)}"
   end
 
   def show_flop
@@ -131,16 +136,16 @@ class Blackjack
   end
 
   def blackjack?
-    total(player.hand) == 21 ? true : false
+    total(player) == 21 ? true : false
   end
 
   def blackjack
-    puts total(dealer.hand) == 21 ? "Push, dealer also had blackjack" : "You won #{name}"
+    puts total(dealer) == 21 ? "Push, dealer also had blackjack" : "You won #{name}"
     play_again
   end
 
   def bust?(player_or_dealer)
-    if total(player_or_dealer.hand) > 21
+    if total(player_or_dealer) > 21
       show_hand(player_or_dealer)
       puts "--#{player_or_dealer.name.capitalize} Busted--"
       puts player_or_dealer.class == Dealer ? "--YOU WIN!!--" : "You Lose.."
@@ -171,7 +176,7 @@ class Blackjack
   end
 
   def dealer_hit?
-    total(dealer.hand) < 17
+    total(dealer) < 17
   end
 
   def dealers_turn
@@ -187,10 +192,10 @@ class Blackjack
   end
 
   def who_won
-    if total(player.hand) == total(dealer.hand)
+    if total(player) == total(dealer)
       puts "----PUSH----"
     else
-      puts total(player.hand) > total(dealer.hand) ? "--YOU WIN!!--" : "You Lose, Dealer has better hand"
+      puts total(player) > total(dealer) ? "--YOU WIN!!--" : "You Lose, Dealer has better hand"
     end
     play_again
   end
