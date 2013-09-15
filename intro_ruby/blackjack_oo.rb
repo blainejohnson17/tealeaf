@@ -73,11 +73,6 @@ class Dealer
     @hand = []
   end
 
-  def show_flop
-    response = "\n--- #{name.capitalize}'s Hand ---\n"
-    hand.each.with_index{|card, index| response += index == 0 ? "  => #{card}\n" : "  => Second card hidden \n" }
-    response
-  end
 end
 
 class Blackjack
@@ -118,7 +113,9 @@ class Blackjack
   end
 
   def show_flop
-    puts dealer.show_flop
+    puts "\n--- #{dealer.name.capitalize}'s Hand ---"
+    puts "  => #{dealer.first}"
+    puts "  => Second card hidden "
     puts " >>>> Total: #{total([dealer.first])} <<<<"
   end
   def deal
