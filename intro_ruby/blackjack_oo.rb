@@ -33,6 +33,7 @@ end
 
 module Hand
   include Enumerable
+
   def add_card(card)
     hand << card
   end
@@ -77,6 +78,7 @@ end
 
 class Blackjack
   attr_accessor :deck, :player, :dealer, :participants
+  STAY_MIN = 17
 
   def initialize
     @deck = new_deck
@@ -113,7 +115,7 @@ class Blackjack
   end
 
   def show_flop
-    puts "\n--- #{dealer.name.capitalize}'s Hand ---"
+    puts "\n--- #{dealer.name.capitalize}'s Hand: ---"
     puts "  => #{dealer.first}"
     puts "  => Second card hidden "
     puts " >>>> Total: #{total([dealer.first])} <<<<"
@@ -139,7 +141,7 @@ class Blackjack
   def blackjack
     puts "\n-->> Blackjack!! <<--"
     show_hand(dealer)
-    puts total(dealer) == 21 ? "\n-->> Push, dealer also has Blackjack <<--" : "\n-->> You won #{player.name}!! <<--"
+    puts total(dealer) == 21 ? "\n-->> PUSH, dealer also has Blackjack <<--" : "\n-->> #{player.name.capitalize} WINS!! <<--"
     play_again
   end
 
@@ -147,7 +149,7 @@ class Blackjack
     if total(player_or_dealer) > 21
       show_hand(player_or_dealer)
       puts "\n-->> #{player_or_dealer.name.capitalize} Busted <<--"
-      puts player_or_dealer.class == Dealer ? "\n-->> YOU WIN!! <<--" : "\n-->> You Lose.. <<--"
+      puts player_or_dealer.class == Dealer ? "\n-->> #{player.name.capitalize} WINS!! <<--" : "\n-->> #{player.name.capitalize} Loses.. <<--"
       play_again
     end
   end
@@ -165,29 +167,23 @@ class Blackjack
   end
 
   def players_turn
-    response = get_response '1)hit or 2)stay :'
-    if response == '1'
+    while (get_response '1)hit or 2)stay :') == '1'
       player.add_card(deck.deal)
+      puts "\n--> #{player.name.capitalize} HITS <--"
       bust?(player)
       show_hand(player)
-      players_turn
     end
-  end
-
-  def dealer_hit?
-    total(dealer) < 17
+    puts "\n--> #{player.name.capitalize} STAYS <--"
   end
 
   def dealers_turn
-    if dealer_hit?
+    while total(dealer) < STAY_MIN
       dealer.add_card(deck.deal)
       puts "\n--> Dealer HITS <--"
       bust?(dealer)
       show_hand(dealer)
-      dealers_turn
-    else
-      puts "\n--> Dealer STAYS <--"
     end
+    puts "\n--> Dealer STAYS <--"
   end
 
   def who_won
