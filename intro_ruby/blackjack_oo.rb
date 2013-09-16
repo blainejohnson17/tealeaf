@@ -97,6 +97,10 @@ class Blackjack
     gets.chomp
   end
 
+  def add_player
+
+  end
+
   def total(hand)
     jack, queen, king, ace = 10, 10, 10, 11
     arr = hand.map { |card| card.face }
@@ -130,7 +134,7 @@ class Blackjack
     player.clear_hand
     dealer.clear_hand
     deck = new_deck
-    response = get_response("1)play, 2)exit :")
+    response = get_response("1)play, 2)exit : ", '1', '2')
     response == '1' ? start_game : exit
   end
 
@@ -154,20 +158,18 @@ class Blackjack
     end
   end
 
-  def get_response message
-    response = '0'
+  def get_response(message, *options)
     prompt = "\nWhat would you like to do? "
     prompt += message
-    while response != '1' && response != '2'
+    while true
       print prompt
       response = gets.chomp
-      puts 'invalid entry' if response != '1' && response != '2' 
+      options.include?(response) ? (return response) : (puts 'invalid entry')
     end
-    response
   end
 
   def players_turn
-    while (get_response '1)hit or 2)stay :') == '1'
+    while (get_response '1)hit or 2)stay :', '1', '2') == '1'
       player.add_card(deck.deal)
       puts "\n--> #{player.name.capitalize} HITS <--"
       bust?(player)
@@ -187,10 +189,8 @@ class Blackjack
   end
 
   def who_won
-    if total(player) == total(dealer)
-      puts "\n-->> PUSH <<--"
-    else
-      puts total(player) > total(dealer) ? "\n-->> YOU WIN!! <<--" : "\n-->> You Lose, Dealer has better hand <<--"
+    if total(player) == total(dealer) then puts "\n-->> PUSH <<--"
+    else puts total(player) > total(dealer) ? "\n-->> YOU WIN!! <<--" : "\n-->> You Lose, Dealer has better hand <<--"
     end
     play_again
   end
