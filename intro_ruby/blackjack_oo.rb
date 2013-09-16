@@ -13,13 +13,18 @@ class Card
 end
 
 class Deck
+  include Enumerable
   attr_accessor :deck
   def initialize(num)
     @deck = create_deck(num).shuffle!
   end
 
   def deal
-    @deck.pop
+    deck.pop
+  end
+
+  def each
+    deck.each { |card| yield card}
   end
 
   def create_deck(num)
@@ -49,7 +54,7 @@ module Hand
   end
 
   def each
-    hand.each { |e| yield e }
+    hand.each { |card| yield card }
   end
 end
 
@@ -73,7 +78,6 @@ class Dealer
     @name = "Dealer"
     @hand = []
   end
-
 end
 
 class Blackjack
@@ -82,9 +86,8 @@ class Blackjack
 
   def initialize
     @deck = new_deck
-    @player = Player.new("#{get_name}")
     @dealer = Dealer.new
-    @participants = [@player, @dealer]
+    @participants = []
   end
 
   def new_deck
@@ -98,7 +101,11 @@ class Blackjack
   end
 
   def add_player
+    participants << Player.new("#{get_name}")
+  end
 
+  def remove_player
+    participants.each.with_index { |p, i| puts "Player#{i + 1}: #{p}"}
   end
 
   def total(hand)
@@ -107,7 +114,7 @@ class Blackjack
     total_value = arr.inject(0) do |total, element|
       total + (element.to_i == 0 ? eval(element) : element.to_i)
     end
-    arr.select{|x| x == 'ace'}.count.times do
+    arr.select { |x| x == 'ace' }.count.times do
       total_value -= 10 if total_value > 21
     end
     total_value
@@ -126,36 +133,46 @@ class Blackjack
   end
   def deal
     2.times do
-      participants.each { |player_or_dealer| player_or_dealer.add_card(deck.deal) }
+      participants.each { |player| player.add_card(deck.deal) }
+      dealer.add_card(deck.deal)
+      puts deck.count
     end 
   end
 
   def play_again
-    player.clear_hand
+    participants.each { |participant| participant.clear_hand }
     dealer.clear_hand
-    deck = new_deck
-    response = get_response("1)play, 2)exit : ", '1', '2')
-    response == '1' ? start_game : exit
+    self.deck = new_deck
+    start_game
   end
 
-  def blackjack?
+  def play
+    while true
+      response = get_response("1)play, 2)add player 3)remove player 4)exit : ", '1', '2', '3', '4')
+      case response
+      when '1' then return
+      when '2' then add_player
+      when '3' then remove_player
+      else          exit
+      end
+    end
+  end
+
+  def blackjack?(player)
     total(player) == 21 ? true : false
   end
 
   def blackjack
     puts "\n-->> Blackjack!! <<--"
-    show_hand(dealer)
-    puts total(dealer) == 21 ? "\n-->> PUSH, dealer also has Blackjack <<--" : "\n-->> #{player.name.capitalize} WINS!! <<--"
-    play_again
   end
 
   def bust?(player_or_dealer)
-    if total(player_or_dealer) > 21
-      show_hand(player_or_dealer)
-      puts "\n-->> #{player_or_dealer.name.capitalize} Busted <<--"
-      puts player_or_dealer.class == Dealer ? "\n-->> #{player.name.capitalize} WINS!! <<--" : "\n-->> #{player.name.capitalize} Loses.. <<--"
-      play_again
-    end
+    total(player_or_dealer) > 21 ? true : false
+  end
+
+  def bust(player_or_dealer)
+    show_hand(player_or_dealer)
+    puts "\n-->> #{player_or_dealer.name.capitalize} Busted <<--"
   end
 
   def get_response(message, *options)
@@ -168,39 +185,65 @@ class Blackjack
     end
   end
 
-  def players_turn
-    while (get_response '1)hit or 2)stay :', '1', '2') == '1'
+  def players_turn(player)
+    while (get_response "#{player.name.capitalize}'s turn, 1)hit or 2)stay :", '1', '2') == '1'
       player.add_card(deck.deal)
       puts "\n--> #{player.name.capitalize} HITS <--"
-      bust?(player)
+      if bust?(player)
+        bust(player)
+        return
+      end
       show_hand(player)
     end
     puts "\n--> #{player.name.capitalize} STAYS <--"
   end
 
   def dealers_turn
+    return if participants.select { |player| !bust?(player) }.count == 0
+    return if participants.select { |player| total(player) == 21 && player.count == 2 }.count == participants.count
     while total(dealer) < STAY_MIN
       dealer.add_card(deck.deal)
       puts "\n--> Dealer HITS <--"
-      bust?(dealer)
+      if bust?(dealer)
+        bust(dealer)
+        return
+      end
       show_hand(dealer)
     end
     puts "\n--> Dealer STAYS <--"
   end
 
   def who_won
-    if total(player) == total(dealer) then puts "\n-->> PUSH <<--"
-    else puts total(player) > total(dealer) ? "\n-->> YOU WIN!! <<--" : "\n-->> You Lose, Dealer has better hand <<--"
+    puts "\n--> Final Results <--"
+    participants.each do |player|
+      puts "\n--> #{player.name.capitalize}'s Final Hand <--"
+      show_hand(player)
+      case
+      when total(player) > 21
+        puts "\n--> #{player.name.capitalize} Busted <--"
+      when total(player) == total(dealer)
+        puts "\n--> PUSH <--"
+      when total(player) < total(dealer) && total(dealer) <= 21
+        puts "\n--> #{player.name.capitalize} Loses <--"
+      else
+        puts "\n--> #{player.name.capitalize} Wins <--"
+      end
     end
     play_again
   end
 
   def start_game
+    play
     deal
-    show_hand(player)
     show_flop
-    blackjack if blackjack?
-    players_turn
+    participants.each do |player|
+      show_hand(player)
+      if blackjack?(player)
+        blackjack
+        next
+      end
+      players_turn(player)
+    end
     show_hand(dealer)
     dealers_turn
     who_won
