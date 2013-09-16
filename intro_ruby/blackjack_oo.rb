@@ -95,7 +95,7 @@ class Blackjack
   end
   
   def get_name
-    puts "Welcome, to Blackjack!"
+    puts "\nWelcome, to Blackjack!"
     print "Please enter your name: "
     gets.chomp
   end
@@ -105,7 +105,15 @@ class Blackjack
   end
 
   def remove_player
-    participants.each.with_index { |p, i| puts "Player#{i + 1}: #{p}"}
+    if participants.count == 0
+      puts "No Players to Delete"
+    else
+      participants.each.with_index(1) { |p, i| puts "Player #{i}: #{p.name.capitalize}"}
+      arr = participants.each.with_index(1).map { |p, i| i.to_s }
+      response = get_response("\nEnter the player number you would like to remove: ", *arr )
+      participants.delete_at(response.to_i - 1)
+      puts "Player #{response} has been deleted"
+    end
   end
 
   def total(hand)
@@ -150,7 +158,7 @@ class Blackjack
     while true
       response = get_response("1)play, 2)add player 3)remove player 4)exit : ", '1', '2', '3', '4')
       case response
-      when '1' then return
+      when '1' then participants.count == 0 ? (puts "\nPlease add a Player") : return
       when '2' then add_player
       when '3' then remove_player
       else          exit
